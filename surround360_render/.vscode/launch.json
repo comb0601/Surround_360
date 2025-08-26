@@ -1,0 +1,185 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "run_all.py",
+      "type": "python",
+      "request": "launch",
+      "justMyCode": false,
+      "console": "integratedTerminal",
+      "cwd": "/home/cubox/cubox/Surround360",
+      "program": "surround360_render/scripts/run_all.py",
+      "args": [
+        // should delete ~/Desktop/test/render/raw and rgb before run
+        // Needs
+        // 1) config directory
+        //    config/camera_rig.json copied from ~/Desktop/geometric_calibration/camera_rig.json
+        //    config/isp/23486816.json, ... copied from ~/Desktop/vignetting_calibration/isp_new/23486820.json
+        // 2) pole_masks/cam15.png, cam16.png
+        // 3) ~/Desktop/test/0.bin, 1.bin
+
+        "--data_dir", "~/Desktop/test",
+        "--dest_dir", "~/Desktop/test/render",
+        "--start_frame",  "0",
+        "--frame_count",  "3", // 0 = all
+        "--quality",      "6k", // default 6k
+        "--steps_unpack",
+        "--steps_render",
+        "--steps_ffmpeg",
+        "--enable_top",
+        "--enable_bottom",
+        "--enable_pole_removal",
+        "--cubemap_format", "video",
+        "--cubemap_height", "1536", // 0 default is to not generate cubemaps
+        "--cubemap_width", "1536",
+        "--verbose",
+        "--save_raw", "--save_debug_images" //cubox add for debug
+      ]
+    },
+    {
+      "name": "Unpacker (tiff)",
+      "type": "cppdbg",
+      "request": "launch",
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "cwd": "/home/cubox/cubox/Surround360/surround360_render",
+      "program": "/home/cubox/cubox/Surround360/surround360_render/bin/Unpacker",
+      "args": [
+          "--isp_dir", "NOT_EXISTING_DIR", // Because --isp_dir is not exists, only tiff created and no png!
+          "--bin_list", "/home/cubox/Desktop/test/0.bin,/home/cubox/Desktop/test/1.bin",
+          // bin_list is saved to <output_raw_dir>/cam0/000000.tiff
+          // needs existing unpacker_output_raw directory
+          "--output_raw_dir", "/home/cubox/Desktop/test/unpacker_output_raw",
+          "--output_dir", "/home/cubox/Desktop/test/unpacker_output",
+        ],
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Unpacker (tiff & png)",
+      "type": "cppdbg",
+      "request": "launch",
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "cwd": "/home/cubox/cubox/Surround360/surround360_render",
+      "program": "/home/cubox/cubox/Surround360/surround360_render/bin/Unpacker",
+      "args": [
+          // Needs empty <output_dir>/, <output_raw_dir>/ before run to get correct <output_dir>/cam0 directory
+          // option 1) Before color calibration, default <Surround360>/surround360_render/res/config/isp/cmosis_sunex.json file 
+          // can be copied to below isp_dir/<serial>.json and used to save png
+          // option 2) After color calibration, isp_dir shoulde be set to the calibrated isp_dir
+
+          // "--isp_dir", "/home/cubox/Desktop/color_calibration/isp",
+          "--isp_dir", "/home/cubox/Desktop/vignetting_calibration/isp_new/",
+          "--bin_list", "/home/cubox/Desktop/test/0.bin,/home/cubox/Desktop/test/1.bin",
+          // bin_list is saved to <output_raw_dir>/23486816/000000.tiff and <output_dir>/cam0/000000.png
+          "--output_raw_dir", "/home/cubox/Desktop/test/unpacker_output_raw",
+          "--output_dir", "/home/cubox/Desktop/test/unpacker_output",
+        ],
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "[calibration] 0_color_calibrate_all.py",
+      "type": "python",      "request": "launch",      "justMyCode": false,
+      "cwd": "/home/cubox/cubox/Surround360",
+      "program": "surround360_render/scripts/color_calibrate_all.py",
+      "args": [
+        // 1) Run "Unpacker (tiff)" to capture single frame and unpack to ~/Desktop/test/unpacker_output_raw/23486820/000000.tiff
+        // 2) and rename it to ~/Desktop/color_calibration/charts/23486820.tiff
+        //    OR link it to "ln -s ~/Desktop/test/unpacker_output_raw/23486820/000000.tiff ~/Desktop/color_calibration/charts/23486820.tiff"
+
+        // INPUT:
+        //    <data_dir>/charts/23486820.tiff
+        // OUTPUT:
+        //    isp/23486820.json
+        "--data_dir", "~/Desktop/color_calibration",
+        // "--output_data_dir", "~/Desktop/color_calibration/output", // default
+        // "--illuminant", "D50", // D50(default) or D65
+        "--illuminant", "D50",
+        // "--num_squares_w", "6",
+        // "--num_squares_h", "4",
+        //"--min_area_chart_perc", "0.5",
+        //"--max_area_chart_perc", "40.0",
+        "--min_area_chart_perc", "0.4",
+        "--max_area_chart_perc", "80.0",
+        "--black_level_hole",
+        // "--black_level_y_intercept",
+        // "--black_level_adjust",
+      ],
+    },
+    {
+      "name": "[calibration] 1_vignetting_calibrate.py",
+      "type": "python",      "request": "launch",      "justMyCode": false,
+      "cwd": "/home/cubox/cubox/Surround360",
+      "program": "surround360_render/scripts/vignetting_calibrate.py",
+      "args": [
+        // INPUT:
+        //   <data_dir>/23486820/charts/000000.tiff
+        //   <data_dir>/isp/23486820.json(copied from ~/Desktop/color_calibration/isp/23486820.json)
+        // OUTPUT:
+        //   <data_dir>/isp_new/23486820.json
+        // See /tmp/Unpacker.Surround360... log
+        // e.g, 
+        // TestVignettingCalibration.Surround360-RTX8000.cubox.log.INFO.20240624-142942.22024
+        // Unpacker.Surround360-RTX8000.cubox.log.INFO.20240624-143106.22168
+        "--data_dir", "~/Desktop/vignetting_calibration",
+        "--save_debug_images",
+      ],
+    },
+    {
+      "name": "[calibration] 2_geometric_calibration.py",
+      "type": "python",      "request": "launch",      "justMyCode": false,
+      "cwd": "/home/cubox/cubox/Surround360",
+      "program": "surround360_render/scripts/geometric_calibration.py",
+      "args": [
+        // 1) Capture single frame to bin file(e.g, 0.bin, 1.bin)
+        // 2) run "Unpacker (tiff & png)"
+        //    with "--isp_dir", "/home/cubox/Desktop/vignetting_calibration/isp_new/",
+        // 3) run geometric_calibration.py
+        // Needs
+        // ~/Desktop/geometric_calibration/rgb/cam0, ...
+        // -> copy png directories from ~/Desktop/test/unpacker_output/cam0, ...
+        
+        // *** WARNING ***
+        // It takes too long(e.g, calibration runtime: 5:15:56.558557)
+
+        // Fix runtime error:
+        // cv2 not found, 16 bit images will not work
+        // $ pip install opencv-python
+        // $ pip list | grep opencv
+        
+        // Capture and unpack png to <data_dir>/cam1/000000.png
+        // INPUT:
+        //   <data_dir>/cam1/000000.png
+        // OUTPUT:
+        //   <data_dir>/camera_rig.json
+        // Copy <data_dir>/_cubox_output_camera_rig.json to ~/Desktop/test/render/config/camera_rig.json and run run_all.py
+
+        "--data_dir", "~/Desktop/geometric_calibration",
+        "--colmap_dir", "/usr/local/bin", // "/usr/local/bin/colmap",
+        "--rig_json", "/home/cubox/cubox/Surround360/surround360_render/res/config/camera_rig.json",
+        "--output_json", "~/Desktop/geometric_calibration/camera_rig.json",
+        "--pass_count", "1",
+        "--save_debug_images",
+      ],
+    },
+  ]
+}

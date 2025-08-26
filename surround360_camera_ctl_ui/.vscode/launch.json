@@ -1,0 +1,62 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // [RTX8000] - 10sec, 8bit
+      // 1cam/90fps OK
+      // 2cam/45fps 1st frame mismatch (+1card)
+      // 2cam/50fps drop log (+1card)
+      // 3cam/20fps OK
+      // 3cam/40fps drop log
+      // 3cam/40fps OK (+1card)
+      // 3cam/45fps OK (+2card)
+      // 3cam/50fps drop log (+2card)
+      // 5cam/10fps OK
+      // 5cam/20fps OK (+2card)
+      // 7cam/5fps  OK
+      // 7cam/30fps OK (+2card)
+      // 7cam/40fps drop log (+2card)
+      // 8cam/30fps OK (+2card)
+      // 8cam/40fps OK (+2card only)
+      // 8cam/45fps 1st frame mismatch (+2card only)
+      // 8cam/50fps drop log (+2card only)
+      // 9cam/20fps OK (+2card)
+      // 9cam/25fps OK (+2card)
+      // 9cam/30fps drop log (+2card)
+      // 14cam/5fps OK (+2card)
+      // 14cam/10fps OK (+2card)
+      // 14cam/20fps OK (+2card)
+      // 14cam/25fps drop log (+2card)
+      // 17cam/12fps OK (+2card)
+      // 17cam/15fps OK (+2card, 2/4con, not perfect!)
+      // 17cam/20fps drop log (+2card, 2/4con)
+      // pc usb2(only back), tb3 30fps OK // top usb not work!
+      // 6cam on 1card 30fps OK
+      // 12cam on 2card 20fps OK
+      // 17cam pc(5), 2card(6) 15fps OK
+      "name": "CameraControlUI",
+      "type": "cppdbg",
+      "request": "launch",
+      "justMyCode": false,
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "cwd": "/home/cubox/cubox/Surround360/surround360_camera_ctl_ui",
+      // "program": "bin/CameraControlUI",
+      "program": "/home/cubox/cubox/Surround360/surround360_camera_ctl_ui/bin/CameraControlUI",
+      "args": [
+      ],
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
